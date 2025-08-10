@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daily Budget Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            padding: 20px;
+            max-width: 500px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        input, button {
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .expense-list {
+            margin-top: 15px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+        .progress-container {
+            margin-top: 15px;
+            background: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 20px;
+            width: 0%;
+            background: green;
+            text-align: center;
+            color: white;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Daily Budget Tracker</h1>
+
+<input type="number" id="budget" placeholder="Enter Daily Budget" />
+<input type="text" id="expenseName" placeholder="Expense Name" />
+<input type="number" id="expenseAmount" placeholder="Expense Amount" />
+<button onclick="addExpense()">Add Expense</button>
+
+<div class="progress-container">
+    <div class="progress-bar" id="progressBar">0%</div>
+</div>
+
+<div class="expense-list" id="expenseList">
+    <h3>Expenses:</h3>
+</div>
+
+<h3 id="remaining">Remaining Budget: 0</h3>
+
+<script>
+    let budget = localStorage.getItem("budget") ? parseFloat(localStorage.getItem("budget")) : 0;
+    let expenses = localStorage.getItem("expenses") ? JSON.parse(localStorage.getItem("expenses")) : [];
+
+    document.getElementById("budget").value = budget;
+
+    function updateUI() {
+        let totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
+        let remaining = budget - totalSpent;
+
+        document.getElementById("remaining").textContent = "Remaining Budget: " + remaining;
+        
+        // Progress bar update
+        let percentage = budget > 0 ? Math.min((totalSpent / budget) * 100, 100) : 0;
+        let progressBar = document.getElementById("progressBar");
+        progressBar.style.width = percentage + "%";
+        progressBar.textContent = Math.floor(percentage) + "%";
+        progressBar.style.background = remaining >= 0 ? "green" : "red";
+
+        // Expenses list update
+        let listDiv = document.getElementById("expenseList");
+        listDiv.innerHTML = "<h3>Expenses:</h3>";
+        expenses.forEach(e => {
+            listDiv.innerHTML += `<p>${e.name} - ₹${e.amount}</p>`;
+        });
+
+        localStorage.setItem("expenses", JSON.stringify(expenses));
+    }
+
+    function addExpense() {
+        budget = parseFloat(document.getElementById("budget").value) || 0;
+        localStorage.setItem("budget", budget);
+
+        let name = document.getElementById("expenseName").value;
+        let amount = parseFloat(document.getElementById("expenseAmount").value);
+
+        if (!name || isNaN(amount) || amount <= 0) {
+            alert("Please enter valid expense details.");
+            return;
+        }
+
+        expenses.push({ name, amount });
+        document.getElementById("expenseName").value = "";
+        document.getElementById("expenseAmount").value = "";
+
+        updateUI();
+    }
+
+    updateUI();
+</script>
+
+</body>
+</html>
